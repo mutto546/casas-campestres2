@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Encuentra las mejores casas campestres para tu descanso y vacaciones">
+    <title>Casas Campestres - Tu descanso en la naturaleza</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .precio-tachado { text-decoration:line-through; color:#999; font-size:0.85em; margin-right:4px; }
+        .precio-descuento { color:#e65100; font-weight:700; }
+        .badge-descuento {
+            background:#e65100; color:#fff; font-size:0.72rem; font-weight:700;
+            padding:2px 8px; border-radius:12px; margin-left:6px; vertical-align:middle;
+        }
+        .badge-nueva { background:#1565c0; color:#fff; font-size:0.72rem; font-weight:700; padding:2px 8px; border-radius:12px; }
+        .admin-link {
+            font-size:0.75rem; opacity:0.45; color:var(--text-dark);
+            text-decoration:none; padding:4px 10px; border-radius:20px;
+            transition:opacity 0.2s;
+        }
+        .admin-link:hover { opacity:1; background:#f0f0f0; }
+        .empty-casas {
+            grid-column:1/-1; text-align:center; padding:48px 24px;
+            color:#aaa; font-size:1rem;
+        }
+        .empty-casas i { font-size:2.5rem; display:block; margin-bottom:12px; }
+    </style>
+</head>
+<body>
+    <div style="background:#fff;border-bottom:1px solid #eee;padding:8px 24px;display:flex;justify-content:flex-end;align-items:center;gap:10px;font-size:0.88rem;" id="usuarioBtnArea">
+    <button style="background:none;border:2px solid #2e7d32;color:#2e7d32;padding:6px 16px;border-radius:20px;cursor:pointer;font-weight:600;" onclick="abrirModalUsuario && abrirModalUsuario('login')"><i class="fas fa-user"></i> Mi cuenta</button>
+</div>
+
+<header class="header">
+        <div class="header-content">
+            <h1 class="logo">🌿 <span>Casas Campestres</span></h1>
+            <p class="slogan">Descubre el paraíso en la naturaleza</p>
+        </div>
+    </header>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="active"><i class="fas fa-home"></i> Inicio</a></li>
+                <li><a href="#casas"><i class="fas fa-tree"></i> Casas</a></li>
+                <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+                <li><a href="#nosotros"><i class="fas fa-info-circle"></i> Nosotros</a></li>
+                <li><a href="admin.html" class="admin-link"><i class="fas fa-lock"></i> Admin</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Escápate de la rutina</h2>
+            <p>Las mejores casas campestres con paisajes inolvidables</p>
+            <a href="#casas" class="btn-hero">Ver opciones <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <main>
+        <section id="casas" class="casas-section">
+            <div class="section-header">
+                <h2>🏡 Propuestas destacadas</h2>
+                <p>Selección especial para ti</p>
+            </div>
+            <div class="contenedor" id="contenedorCasas">
+                <!-- Las casas se cargan dinámicamente -->
+            </div>
+        </section>
+
+        <section class="features">
+            <h2>¿Por qué elegirnos?</h2>
+            <div class="features-grid">
+                <div class="feature">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Seguridad</h3>
+                    <p>Propiedades verificadas y seguras</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-clock"></i>
+                    <h3>Check-in flexible</h3>
+                    <p>Llega a la hora que prefieras</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-credit-card"></i>
+                    <h3>Pago seguro</h3>
+                    <p>Múltiples métodos de pago</p>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-headset"></i>
+                    <h3>Soporte 24/7</h3>
+                    <p>Siempre disponibles para ti</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer" id="contacto">
+        <div class="footer-content">
+            <div class="footer-section" id="nosotros">
+                <h4>🌿 Casas Campestres</h4>
+                <p>Tu mejor opción para escapar de la ciudad y conectar con la naturaleza.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Enlaces rápidos</h4>
+                <ul>
+                    <li><a href="#casas">Propiedades</a></li>
+                    <li><a href="#nosotros">Sobre nosotros</a></li>
+                    <li><a href="#contacto">Contacto</a></li>
+                    <li><a href="#">Términos y condiciones</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contacto</h4>
+                <p><i class="fas fa-phone"></i> +57 300 380 6930</p>
+                <p><i class="fas fa-envelope"></i> info@casascampestres.co</p>
+                <p><i class="fas fa-map-marker-alt"></i> Valledupar, Colombia</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Casas Campestres. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+    // ── Cargar casas desde localStorage (datos del admin) ──
+    function getData(key, def) {
+        try { return JSON.parse(localStorage.getItem('heiman_' + key)) || def; } catch { return def; }
+    }
+
+    function renderCasas() {
+        const casas = getData('casas', []).filter(c => c.activa);
+        const cont = document.getElementById('contenedorCasas');
+
+        if (!casas.length) {
+            cont.innerHTML = `<div class="empty-casas"><i class="fas fa-home"></i>Próximamente nuevas propiedades</div>`;
+            return;
+        }
+
+        cont.innerHTML = casas.map(c => {
+            const precioFinal = c.descuento > 0
+                ? Math.round(c.precio * (1 - c.descuento / 100))
+                : c.precio;
+
+            const precioHTML = c.descuento > 0
+                ? `<span class="precio-tachado">$${c.precio.toLocaleString('es-CO')}</span>
+                   <span class="precio-descuento">$${precioFinal.toLocaleString('es-CO')}</span>
+                   <span class="badge-descuento">-${c.descuento}%</span>`
+                : `$${c.precio.toLocaleString('es-CO')}`;
+
+            const link = c.link && c.link !== '#' ? c.link : '#';
+            const badgeNueva = c.esNueva ? '<span class="badge" style="background:#1565c0;">Nueva</span>' : '<span class="badge">Destacado</span>';
+
+            const caractArr = c.caract ? c.caract.split(',').slice(0, 4) : [];
+            const caractHTML = caractArr.map(ca => `<span><i class="fas fa-check-circle"></i> ${ca.trim()}</span>`).join('');
+
+            return `
+            <article class="casa-card">
+                <div class="casa-img">
+                    <img src="${c.img}" alt="${c.nombre}" onerror="this.src='img/casa1.png'">
+                    ${badgeNueva}
+                </div>
+                <div class="casa-info">
+                    <h3>${c.nombre}</h3>
+                    <p style="font-size:0.82rem;color:#888;margin-bottom:6px;">
+                        <i class="fas fa-map-marker-alt"></i> ${c.ubicacion || ''}
+                    </p>
+                    <div class="rating">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p class="descripcion">${c.desc}</p>
+                    <div class="caracteristicas">
+                        <span><i class="fas fa-users"></i> ${c.personas} pers</span>
+                        <span><i class="fas fa-bed"></i> ${c.habitaciones} hab</span>
+                        ${caractHTML}
+                    </div>
+                    <div class="precio-info">
+                        <p class="precio">${precioHTML} <span>/noche</span></p>
+                        <a href="${link}" class="btn-reservar">Reservar <i class="fas fa-calendar-check"></i></a>
+                    </div>
+                </div>
+            </article>`;
+        }).join('');
+    }
+
+    renderCasas();
+
+    document.getElementById('menuToggle').addEventListener('click', function() {
+        document.getElementById('navMenu').classList.toggle('active');
+    });
+    </script>
+    <script src="script.js"></script>
+<script src="reservas.js"></script>
+<!-- Modal usuario para el inicio -->
+<div class="modal-usuario-overlay" id="modalUsuario" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:1.1rem;font-weight:700;color:#2e7d32;">🌿 Mi cuenta</span>
+            <button onclick="document.getElementById('modalUsuario').classList.remove('active');document.body.style.overflow=''" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888;">✕</button>
+        </div>
+        <div style="display:flex;gap:0;margin-bottom:24px;border-radius:10px;overflow:hidden;border:2px solid #e0e0e0;">
+            <button class="tab-u activo" id="tabLogin" onclick="cambiarTabUsuario('login')" style="flex:1;padding:10px;text-align:center;cursor:pointer;font-weight:600;font-size:0.92rem;">Iniciar sesión</button>
+            <button class="tab-u" id="tabRegistro" onclick="cambiarTabUsuario('registro')" style="flex:1;padding:10px;text-align:center;cursor:pointer;font-weight:600;font-size:0.92rem;background:#f9f9f9;">Registrarse</button>
+        </div>
+        <div id="panelLogin">
+            <label style="display:block;font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:4px;">Correo</label>
+            <input type="email" id="uEmail" placeholder="tu@correo.com" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.95rem;outline:none;margin-bottom:10px;">
+            <label style="display:block;font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:4px;">Contraseña</label>
+            <input type="password" id="uPass" placeholder="••••••" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.95rem;outline:none;margin-bottom:10px;">
+            <button onclick="intentarLogin()" style="width:100%;padding:12px;background:#2e7d32;color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;">Ingresar</button>
+        </div>
+        <div id="panelRegistro" style="display:none">
+            <label style="display:block;font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:4px;">Nombre *</label>
+            <input type="text" id="uNombreReg" placeholder="Tu nombre" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.95rem;outline:none;margin-bottom:10px;">
+            <label style="display:block;font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:4px;">Correo *</label>
+            <input type="email" id="uEmailReg" placeholder="tu@correo.com" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.95rem;outline:none;margin-bottom:10px;">
+            <label style="display:block;font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:4px;">Teléfono</label>
+            <input type="tel" id="uTelReg" placeholder="300 123 4567" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.95rem;outline:none;margin-bottom:10px;">
+            <label style="display:block;font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:4px;">Contraseña *</label>
+            <input type="password" id="uPassReg" placeholder="Crea una contraseña" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.95rem;outline:none;margin-bottom:10px;">
+            <button onclick="intentarRegistro()" style="width:100%;padding:12px;background:#2e7d32;color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;">Crear cuenta</button>
+            <div style="background:#fff3e0;border-radius:8px;padding:12px;margin-top:14px;font-size:0.82rem;line-height:1.6;border-left:3px solid #ff6f00;">
+                <b>🎁 Descuentos por cliente frecuente:</b><br>
+                ✅ 1–2 reservas: 5% · 🌟 3–4: 10% · ⭐ 5+: 15% VIP
+            </div>
+        </div>
+        <div class="msg-usuario" id="msgUsuario" style="font-size:0.88rem;margin-top:10px;min-height:18px;text-align:center;"></div>
+    </div>
+</div>
+<style>
+.modal-usuario-overlay.active { opacity:1!important; pointer-events:all!important; }
+.tab-u.activo { background:#2e7d32!important; color:#fff!important; }
+</style>
+</body>
+</html>

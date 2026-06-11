@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin — Casas Campestres</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --verde: #2e7d32;
+            --verde-oscuro: #1b5e20;
+            --verde-claro: #4caf50;
+            --naranja: #ff6f00;
+            --naranja-claro: #ffa726;
+            --rojo: #c62828;
+            --azul: #1565c0;
+            --gris-fondo: #f0f2f5;
+            --gris-card: #fff;
+            --gris-borde: #e0e0e0;
+            --texto: #212121;
+            --texto-suave: #757575;
+            --sombra: 0 2px 12px rgba(0,0,0,0.08);
+            --sombra-hover: 0 6px 24px rgba(0,0,0,0.14);
+            --radio: 12px;
+            --sidebar-w: 260px;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gris-fondo); color: var(--texto); }
+
+        /* ─── LOGIN ─── */
+        #loginScreen {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--verde-oscuro) 0%, var(--verde-claro) 100%);
+        }
+        .login-card {
+            background: #fff; border-radius: 20px; padding: 48px 40px;
+            width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .login-card .logo-login { font-size: 2.8rem; margin-bottom: 8px; }
+        .login-card h2 { color: var(--verde-oscuro); font-size: 1.4rem; margin-bottom: 6px; }
+        .login-card p { color: var(--texto-suave); font-size: 0.9rem; margin-bottom: 32px; }
+        .login-field { position: relative; margin-bottom: 18px; text-align:left; }
+        .login-field label { display:block; font-size:0.82rem; font-weight:600; color:var(--texto-suave); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+        .login-field input {
+            width:100%; padding:12px 16px 12px 44px; border:2px solid var(--gris-borde);
+            border-radius: 10px; font-size:1rem; transition: border 0.2s;
+            outline:none;
+        }
+        .login-field input:focus { border-color: var(--verde-claro); }
+        .login-field .fi { position:absolute; left:14px; bottom:13px; color:var(--texto-suave); }
+        .btn-login {
+            width:100%; padding:14px; background:linear-gradient(135deg,var(--verde-oscuro),var(--verde-claro));
+            color:#fff; border:none; border-radius:10px; font-size:1.05rem; font-weight:600;
+            cursor:pointer; transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-login:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(46,125,50,0.4); }
+        .login-error { color:var(--rojo); font-size:0.88rem; margin-top:10px; display:none; }
+
+        /* ─── LAYOUT ─── */
+        #adminPanel { display:none; min-height:100vh; }
+
+        .sidebar {
+            position: fixed; top:0; left:0; width:var(--sidebar-w); height:100vh;
+            background: linear-gradient(180deg, var(--verde-oscuro) 0%, #1a3a1a 100%);
+            color:#fff; display:flex; flex-direction:column; z-index:100;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+        }
+        .sidebar-logo {
+            padding: 28px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align:center;
+        }
+        .sidebar-logo .emoji { font-size:2rem; }
+        .sidebar-logo h3 { font-size:1rem; font-weight:600; margin-top:6px; opacity:0.95; }
+        .sidebar-logo small { opacity:0.6; font-size:0.78rem; }
+
+        .sidebar-nav { flex:1; padding:16px 0; overflow-y:auto; }
+        .nav-item {
+            display:flex; align-items:center; gap:12px; padding:13px 20px;
+            cursor:pointer; transition: background 0.2s; font-size:0.95rem;
+            border-left: 3px solid transparent;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.08); }
+        .nav-item.active { background: rgba(255,255,255,0.13); border-left-color: var(--verde-claro); font-weight:600; }
+        .nav-item i { width:20px; text-align:center; opacity:0.85; }
+
+        .sidebar-footer {
+            padding:16px 20px; border-top:1px solid rgba(255,255,255,0.1);
+            font-size:0.8rem; opacity:0.6;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background:#fff; padding:16px 28px; display:flex; align-items:center;
+            justify-content:space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            position:sticky; top:0; z-index:50;
+        }
+        .topbar h1 { font-size:1.25rem; color:var(--verde-oscuro); font-weight:700; }
+        .topbar-right { display:flex; align-items:center; gap:16px; }
+        .admin-badge {
+            background: var(--verde-oscuro); color:#fff; padding:6px 14px;
+            border-radius:20px; font-size:0.82rem; font-weight:600;
+        }
+        .btn-logout {
+            background:none; border:2px solid var(--gris-borde); color:var(--texto-suave);
+            padding:6px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover { border-color:var(--rojo); color:var(--rojo); }
+
+        /* ─── SECCIONES ─── */
+        .section { display:none; padding:28px; }
+        .section.active { display:block; }
+
+        /* ─── CARDS RESUMEN ─── */
+        .stats-grid {
+            display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+            gap:20px; margin-bottom:28px;
+        }
+        .stat-card {
+            background:#fff; border-radius:var(--radio); padding:22px;
+            box-shadow:var(--sombra); display:flex; align-items:center; gap:16px;
+        }
+        .stat-icon {
+            width:52px; height:52px; border-radius:14px;
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.4rem; flex-shrink:0;
+        }
+        .stat-icon.verde { background:#e8f5e9; color:var(--verde); }
+        .stat-icon.naranja { background:#fff3e0; color:var(--naranja); }
+        .stat-icon.azul { background:#e3f2fd; color:var(--azul); }
+        .stat-icon.rojo { background:#ffebee; color:var(--rojo); }
+        .stat-info h3 { font-size:1.8rem; font-weight:700; color:var(--texto); }
+        .stat-info p { font-size:0.82rem; color:var(--texto-suave); }
+
+        /* ─── RESERVAS ─── */
+        .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .section-title { font-size:1.1rem; font-weight:700; color:var(--verde-oscuro); }
+
+        .reservas-tabla { background:#fff; border-radius:var(--radio); box-shadow:var(--sombra); overflow:hidden; }
+        .reservas-tabla table { width:100%; border-collapse:collapse; }
+        .reservas-tabla th {
+            background:var(--verde-oscuro); color:#fff; padding:13px 16px;
+            text-align:left; font-size:0.82rem; font-weight:600; text-transform:uppercase; letter-spacing:0.4px;
+        }
+        .reservas-tabla td { padding:13px 16px; border-bottom:1px solid var(--gris-borde); font-size:0.9rem; }
+        .reservas-tabla tr:hover td { background:#f9f9f9; }
+        .reservas-tabla tr:last-child td { border-bottom:none; }
+
+        .badge-estado {
+            padding:4px 10px; border-radius:20px; font-size:0.76rem; font-weight:600;
+        }
+        .badge-estado.pendiente { background:#fff3e0; color:#e65100; }
+        .badge-estado.confirmada { background:#e8f5e9; color:#2e7d32; }
+        .badge-estado.cancelada { background:#ffebee; color:#c62828; }
+
+        /* ─── CALENDARIO ADMIN ─── */
+        .calendario-admin-wrap {
+            background:#fff; border-radius:var(--radio); box-shadow:var(--sombra); padding:24px;
+        }
+        .cal-admin-nav {
+            display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;
+        }
+        .cal-admin-nav button {
+            background:var(--verde); color:#fff; border:none; border-radius:8px;
+            padding:8px 16px; cursor:pointer; font-size:1rem;
+        }
+        .cal-admin-titulo { font-size:1.1rem; font-weight:700; color:var(--verde-oscuro); }
+        .cal-admin-grid {
+            display:grid; grid-template-columns:repeat(7,1fr); gap:6px;
+        }
+        .cal-admin-dn {
+            text-align:center; font-size:0.72rem; font-weight:700; color:var(--texto-suave);
+            padding:6px 0; text-transform:uppercase;
+        }
+        .cal-admin-dia {
+            text-align:center; padding:10px 4px; border-radius:10px;
+            font-size:0.88rem; cursor:pointer; transition: all 0.18s;
+            border:2px solid transparent; position:relative;
+        }
+        .cal-admin-dia:not(.vacio):not(.pasado):hover { border-color:var(--verde); background:#e8f5e9; }
+        .cal-admin-dia.reservado { background:#ffcdd2; color:var(--rojo); font-weight:700; }
+        .cal-admin-dia.disponible { background:#e8f5e9; color:var(--verde); }
+        .cal-admin-dia.pasado { opacity:0.35; cursor:default; }
+        .cal-admin-dia.hoy { border-color:var(--naranja); font-weight:700; }
+
+        .leyenda-cal { display:flex; gap:16px; margin-top:14px; flex-wrap:wrap; }
+        .leyenda-item { display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--texto-suave); }
+        .leyenda-color { width:14px; height:14px; border-radius:4px; }
+
+        .casas-selector { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .casa-tab {
+            padding:8px 18px; border-radius:20px; border:2px solid var(--gris-borde);
+            cursor:pointer; font-size:0.88rem; font-weight:600; transition: all 0.2s; background:#fff;
+        }
+        .casa-tab.activo { background:var(--verde-oscuro); color:#fff; border-color:var(--verde-oscuro); }
+
+        /* ─── CASAS EDITOR ─── */
+        .casas-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:22px; }
+        .casa-editor-card {
+            background:#fff; border-radius:var(--radio); box-shadow:var(--sombra);
+            overflow:hidden; transition: box-shadow 0.2s;
+        }
+        .casa-editor-card:hover { box-shadow:var(--sombra-hover); }
+        .casa-editor-img { position:relative; height:200px; overflow:hidden; }
+        .casa-editor-img img { width:100%; height:100%; object-fit:cover; }
+        .casa-editor-img .overlay-btns {
+            position:absolute; inset:0; background:rgba(0,0,0,0.4);
+            display:flex; align-items:center; justify-content:center; gap:10px;
+            opacity:0; transition:opacity 0.2s;
+        }
+        .casa-editor-img:hover .overlay-btns { opacity:1; }
+        .btn-img-overlay {
+            background:#fff; color:var(--texto); border:none; border-radius:8px;
+            padding:8px 14px; cursor:pointer; font-size:0.85rem; font-weight:600;
+            display:flex; align-items:center; gap:6px;
+        }
+        .casa-editor-body { padding:20px; }
+        .casa-editor-body label { font-size:0.78rem; font-weight:700; color:var(--texto-suave); text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:4px; }
+        .casa-editor-body input, .casa-editor-body textarea, .casa-editor-body select {
+            width:100%; padding:9px 12px; border:2px solid var(--gris-borde);
+            border-radius:8px; font-size:0.92rem; margin-bottom:12px; outline:none;
+            transition: border 0.2s; font-family:inherit;
+        }
+        .casa-editor-body input:focus, .casa-editor-body textarea:focus { border-color:var(--verde-claro); }
+        .casa-editor-body textarea { resize:vertical; min-height:70px; }
+
+        .precio-row { display:flex; gap:10px; align-items:end; }
+        .precio-row > div { flex:1; }
+        .descuento-badge {
+            display:inline-block; background:#fff3e0; color:var(--naranja); padding:3px 10px;
+            border-radius:20px; font-size:0.78rem; font-weight:700; margin-left:8px;
+        }
+
+        .btn-guardar-casa {
+            width:100%; padding:11px; background:var(--verde-oscuro); color:#fff;
+            border:none; border-radius:8px; font-size:0.95rem; font-weight:600;
+            cursor:pointer; transition: background 0.2s; display:flex; align-items:center; justify-content:center; gap:8px;
+        }
+        .btn-guardar-casa:hover { background:var(--verde-claro); }
+
+        /* ─── NUEVA CASA ─── */
+        .nueva-casa-form {
+            background:#fff; border-radius:var(--radio); box-shadow:var(--sombra);
+            padding:28px; max-width:700px;
+        }
+        .nueva-casa-form h3 { font-size:1.05rem; font-weight:700; color:var(--verde-oscuro); margin-bottom:20px; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .form-group { margin-bottom:16px; }
+        .form-group label { font-size:0.78rem; font-weight:700; color:var(--texto-suave); text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:5px; }
+        .form-group input, .form-group textarea, .form-group select {
+            width:100%; padding:10px 13px; border:2px solid var(--gris-borde);
+            border-radius:8px; font-size:0.93rem; outline:none; transition:border 0.2s; font-family:inherit;
+        }
+        .form-group input:focus, .form-group textarea:focus { border-color:var(--verde-claro); }
+        .form-group textarea { min-height:80px; resize:vertical; }
+
+        .imagenes-upload-area {
+            border:2px dashed var(--gris-borde); border-radius:10px; padding:24px;
+            text-align:center; cursor:pointer; transition: border 0.2s, background 0.2s;
+        }
+        .imagenes-upload-area:hover { border-color:var(--verde); background:#f1f8f1; }
+        .imagenes-upload-area i { font-size:2rem; color:var(--verde); margin-bottom:8px; }
+        .imagenes-upload-area p { color:var(--texto-suave); font-size:0.88rem; }
+        .imagenes-preview { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+        .img-preview-item { position:relative; }
+        .img-preview-item img { width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid var(--gris-borde); }
+        .img-preview-item .del-img {
+            position:absolute; top:-6px; right:-6px; background:var(--rojo); color:#fff;
+            border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:0.7rem;
+            display:flex; align-items:center; justify-content:center;
+        }
+
+        .btn-crear-casa {
+            padding:13px 32px; background:linear-gradient(135deg,var(--verde-oscuro),var(--verde-claro));
+            color:#fff; border:none; border-radius:10px; font-size:1rem; font-weight:700;
+            cursor:pointer; transition: transform 0.15s, box-shadow 0.15s; margin-top:8px;
+        }
+        .btn-crear-casa:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(46,125,50,0.35); }
+
+        /* ─── TOAST ─── */
+        .toast {
+            position:fixed; bottom:24px; right:24px; background:#323232; color:#fff;
+            padding:14px 22px; border-radius:10px; font-size:0.92rem; font-weight:500;
+            box-shadow:0 6px 24px rgba(0,0,0,0.25); transform:translateY(80px); opacity:0;
+            transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1); z-index:9999; display:flex; align-items:center; gap:10px;
+        }
+        .toast.show { transform:translateY(0); opacity:1; }
+        .toast.verde { background:var(--verde-oscuro); }
+        .toast.naranja { background:var(--naranja); }
+
+        /* ─── MODAL GENERAL ─── */
+        .modal-bg {
+            position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500;
+            display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none;
+            transition:opacity 0.25s;
+        }
+        .modal-bg.open { opacity:1; pointer-events:all; }
+        .modal-box {
+            background:#fff; border-radius:16px; padding:32px; max-width:480px; width:90%;
+            box-shadow:0 20px 60px rgba(0,0,0,0.2); transform:scale(0.95); transition:transform 0.25s;
+        }
+        .modal-bg.open .modal-box { transform:scale(1); }
+        .modal-box h3 { font-size:1.1rem; font-weight:700; color:var(--verde-oscuro); margin-bottom:16px; }
+        .modal-box label { font-size:0.78rem; font-weight:700; color:var(--texto-suave); text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:5px; }
+        .modal-box input, .modal-box select, .modal-box textarea {
+            width:100%; padding:10px 13px; border:2px solid var(--gris-borde);
+            border-radius:8px; font-size:0.93rem; outline:none; transition:border 0.2s; font-family:inherit; margin-bottom:12px;
+        }
+        .modal-box input:focus, .modal-box textarea:focus { border-color:var(--verde-claro); }
+        .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:8px; }
+        .btn-modal-ok { padding:10px 22px; background:var(--verde-oscuro); color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+        .btn-modal-cancel { padding:10px 22px; background:var(--gris-borde); color:var(--texto); border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+
+        /* ─── RESPONSIVE ─── */
+        @media(max-width:768px) {
+            .sidebar { width:100%; height:auto; position:relative; }
+            .main-content { margin-left:0; }
+            .form-row { grid-template-columns:1fr; }
+        }
+
+        /* ─── DISPONIBILIDAD BLOQUEO ─── */
+        .bloqueo-lista { margin-top:20px; }
+        .bloqueo-item {
+            background:#fff; border-radius:10px; padding:14px 18px; margin-bottom:10px;
+            box-shadow:var(--sombra); display:flex; align-items:center; justify-content:space-between;
+        }
+        .bloqueo-fechas { font-size:0.9rem; font-weight:600; }
+        .bloqueo-motivo { font-size:0.8rem; color:var(--texto-suave); margin-top:2px; }
+        .btn-del-bloqueo {
+            background:var(--rojo); color:#fff; border:none; border-radius:6px;
+            padding:6px 12px; cursor:pointer; font-size:0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="loginScreen">
+    <div class="login-card">
+        <div class="logo-login">🌿</div>
+        <h2>Casas Campestres</h2>
+        <p>Panel de Administración</p>
+        <div class="login-field">
+            <label>Usuario</label>
+            <i class="fas fa-user fi"></i>
+            <input type="text" id="loginUser" placeholder="admin" onkeydown="if(event.key==='Enter')intentarLogin()">
+        </div>
+        <div class="login-field">
+            <label>Contraseña</label>
+            <i class="fas fa-lock fi"></i>
+            <input type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')intentarLogin()">
+        </div>
+        <button class="btn-login" onclick="intentarLogin()">
+            <i class="fas fa-sign-in-alt"></i> Ingresar al panel
+        </button>
+        <div class="login-error" id="loginError">
+            <i class="fas fa-exclamation-circle"></i> Usuario o contraseña incorrectos
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ PANEL ADMIN ═══════════════ -->
+<div id="adminPanel">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="emoji">🌿</div>
+            <h3>Casas Campestres</h3>
+            <small>Admin Panel</small>
+            <a href="index.html" style="display:inline-block;margin-top:10px;font-size:0.78rem;color:rgba(255,255,255,0.7);text-decoration:none;background:rgba(255,255,255,0.1);padding:4px 12px;border-radius:12px;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                <i class="fas fa-arrow-left"></i> Ver sitio
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item active" onclick="cambiarSeccion('dashboard')">
+                <i class="fas fa-chart-pie"></i> Resumen
+            </div>
+            <div class="nav-item" onclick="cambiarSeccion('reservas')">
+                <i class="fas fa-calendar-check"></i> Reservas
+            </div>
+            <div class="nav-item" onclick="cambiarSeccion('disponibilidad')">
+                <i class="fas fa-calendar-alt"></i> Disponibilidad
+            </div>
+            <div class="nav-item" onclick="cambiarSeccion('casas')">
+                <i class="fas fa-edit"></i> Editar Casas
+            </div>
+            <div class="nav-item" onclick="cambiarSeccion('nueva-casa')">
+                <i class="fas fa-plus-circle"></i> Nueva Casa
+            </div>
+            <div class="nav-item" onclick="cambiarSeccion('usuarios')">
+                <i class="fas fa-users"></i> Usuarios
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <i class="fas fa-shield-alt"></i> Acceso seguro · Admin
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <div class="topbar">
+            <h1 id="topbarTitle">📊 Resumen</h1>
+            <div class="topbar-right">
+                <span class="admin-badge"><i class="fas fa-user-cog"></i> Administrador</span>
+                <button class="btn-logout" onclick="cerrarSesion()">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </div>
+
+        <!-- ── DASHBOARD ── -->
+        <section id="sec-dashboard" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon verde"><i class="fas fa-home"></i></div>
+                    <div class="stat-info">
+                        <h3 id="statCasas">2</h3>
+                        <p>Casas activas</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon naranja"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-info">
+                        <h3 id="statReservas">0</h3>
+                        <p>Reservas este mes</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon azul"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h3 id="statPendientes">0</h3>
+                        <p>Pendientes</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon rojo"><i class="fas fa-ban"></i></div>
+                    <div class="stat-info">
+                        <h3 id="statBloqueados">0</h3>
+                        <p>Días bloqueados</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <span class="section-title">📋 Últimas reservas</span>
+                <button class="casa-tab activo" onclick="cambiarSeccion('reservas')">Ver todas</button>
+            </div>
+            <div class="reservas-tabla" id="dashReservasTabla">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Casa</th><th>Huésped</th><th>Llegada</th><th>Salida</th><th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashReservasCuerpo"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ── RESERVAS ── -->
+        <section id="sec-reservas" class="section">
+            <div class="section-header">
+                <span class="section-title">📅 Todas las reservas</span>
+                <button class="casa-tab activo" onclick="abrirModalNuevaReserva()" style="background:var(--verde-oscuro);color:#fff;border-color:var(--verde-oscuro);">
+                    <i class="fas fa-plus"></i> Nueva reserva
+                </button>
+            </div>
+            <div class="reservas-tabla">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Casa</th><th>Huésped</th><th>Teléfono</th><th>Llegada</th><th>Salida</th><th>Noches</th><th>Total</th><th>Estado</th><th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservasCuerpo"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ── DISPONIBILIDAD ── -->
+        <section id="sec-disponibilidad" class="section">
+            <div class="section-header">
+                <span class="section-title">🗓 Disponibilidad & Bloqueos</span>
+            </div>
+
+            <div class="casas-selector" id="calCasaSelector"></div>
+
+            <div class="calendario-admin-wrap">
+                <div class="cal-admin-nav">
+                    <button onclick="calAdminMes(-1)">&#8249;</button>
+                    <span class="cal-admin-titulo" id="calAdminTitulo"></span>
+                    <button onclick="calAdminMes(1)">&#8250;</button>
+                </div>
+                <div class="cal-admin-grid" id="calAdminGrid"></div>
+                <div class="leyenda-cal">
+                    <div class="leyenda-item"><div class="leyenda-color" style="background:#e8f5e9"></div>Libre</div>
+                    <div class="leyenda-item"><div class="leyenda-color" style="background:#ffcdd2"></div>Ocupado / Reservado</div>
+                    <div class="leyenda-item"><div class="leyenda-color" style="background:#ffe0b2"></div>Aseo (40 min)</div>
+                    <div class="leyenda-item"><div class="leyenda-color" style="background:#e1bee7"></div>Mantenimiento</div>
+                    <div class="leyenda-item"><div class="leyenda-color" style="background:#fff3e0; border:2px solid #ffa726"></div>Hoy</div>
+                </div>
+            </div>
+
+            <div class="section-header" style="margin-top:28px;">
+                <span class="section-title">🔒 Bloquear fechas</span>
+                <button class="casa-tab activo" onclick="abrirModalBloqueo()" style="background:var(--naranja);color:#fff;border-color:var(--naranja);">
+                    <i class="fas fa-lock"></i> Bloquear período
+                </button>
+            </div>
+            <div class="bloqueo-lista" id="bloqueoLista"></div>
+        </section>
+
+        <!-- ── EDITAR CASAS ── -->
+        <section id="sec-casas" class="section">
+            <div class="section-header">
+                <span class="section-title">🏡 Editar información de casas</span>
+            </div>
+            <div class="casas-grid" id="casasEditorGrid"></div>
+        </section>
+
+        <!-- ── USUARIOS ── -->
+        <section id="sec-usuarios" class="section">
+            <div class="section-header">
+                <span class="section-title">👤 Usuarios registrados & descuentos</span>
+            </div>
+            <div id="usuariosGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;"></div>
+        </section>
+
+        <!-- ── NUEVA CASA ── -->
+        <section id="sec-nueva-casa" class="section">
+            <div class="section-header">
+                <span class="section-title">➕ Crear nueva casa</span>
+            </div>
+            <div class="nueva-casa-form">
+                <h3><i class="fas fa-home"></i> Información de la nueva propiedad</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre de la casa *</label>
+                        <input type="text" id="nuevaNombre" placeholder="Ej: Casa El Roble">
+                    </div>
+                    <div class="form-group">
+                        <label>Ubicación *</label>
+                        <input type="text" id="nuevaUbicacion" placeholder="Ej: Valledupar, Cesar">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descripción *</label>
+                    <textarea id="nuevaDesc" placeholder="Describe la casa, sus atractivos principales..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Precio por noche (COP) *</label>
+                        <input type="number" id="nuevaPrecio" placeholder="300000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Descuento (%)</label>
+                        <input type="number" id="nuevaDescuento" placeholder="0" min="0" max="100">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Capacidad (personas)</label>
+                        <input type="number" id="nuevaPersonas" placeholder="6" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Habitaciones</label>
+                        <input type="number" id="nuevaHabitaciones" placeholder="3" min="1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Características (separadas por coma)</label>
+                    <input type="text" id="nuevaCaract" placeholder="Jacuzzi, Piscina, Zona BBQ, WiFi...">
+                </div>
+                <div class="form-group">
+                    <label>Imágenes de la casa</label>
+                    <div class="imagenes-upload-area" onclick="document.getElementById('nuevasImgs').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Haz clic para seleccionar imágenes (JPG, PNG)</p>
+                        <input type="file" id="nuevasImgs" multiple accept="image/*" style="display:none" onchange="previewNuevasImgs(event)">
+                    </div>
+                    <div class="imagenes-preview" id="nuevasImgsPreview"></div>
+                </div>
+                <button class="btn-crear-casa" onclick="crearNuevaCasa()">
+                    <i class="fas fa-plus-circle"></i> Crear casa y publicar
+                </button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- ─── MODAL NUEVA RESERVA ─── -->
+<div class="modal-bg" id="modalNuevaReserva">
+    <div class="modal-box">
+        <h3><i class="fas fa-calendar-plus"></i> Registrar reserva</h3>
+        <label>Casa</label>
+        <select id="rCasa"></select>
+        <label>Nombre del huésped</label>
+        <input type="text" id="rNombreAdmin" placeholder="Nombre completo">
+        <label>Teléfono</label>
+        <input type="tel" id="rTelAdmin" placeholder="300 123 4567">
+        <label>Fecha llegada</label>
+        <input type="date" id="rLlegada">
+        <label>Fecha salida</label>
+        <input type="date" id="rSalida">
+        <label>Notas</label>
+        <textarea id="rNotasAdmin" placeholder="Observaciones..."></textarea>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" onclick="cerrarModal('modalNuevaReserva')">Cancelar</button>
+            <button class="btn-modal-ok" onclick="guardarReserva()">Guardar reserva</button>
+        </div>
+    </div>
+</div>
+
+<!-- ─── MODAL BLOQUEO ─── -->
+<div class="modal-bg" id="modalBloqueo">
+    <div class="modal-box">
+        <h3><i class="fas fa-lock"></i> Bloquear período</h3>
+        <label>Casa</label>
+        <select id="bloCasa"></select>
+        <label>Fecha inicio</label>
+        <input type="date" id="bloInicio">
+        <label>Fecha fin</label>
+        <input type="date" id="bloFin">
+        <label>Motivo</label>
+        <select id="bloTipo" style="width:100%;padding:10px 13px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.93rem;outline:none;margin-bottom:12px;">
+            <option value="mantenimiento">🔧 Mantenimiento</option>
+            <option value="aseo">🧹 Aseo / Limpieza</option>
+            <option value="reserva_propia">🏠 Reserva propia</option>
+            <option value="otro">📌 Otro</option>
+        </select>
+        <input type="text" id="bloMotivo" placeholder="Detalles adicionales (opcional)">
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" onclick="cerrarModal('modalBloqueo')">Cancelar</button>
+            <button class="btn-modal-ok" onclick="guardarBloqueo()">Bloquear</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATOS BASE (guardados en localStorage)
+// ═══════════════════════════════════════════
+const CREDENCIALES = { user: 'admin', pass: 'casas2026' };
+
+function getData(key, def) {
+    try { return JSON.parse(localStorage.getItem('heiman_' + key)) || def; } catch { return def; }
+}
+function setData(key, val) { localStorage.setItem('heiman_' + key, JSON.stringify(val)); }
+
+// Datos iniciales
+function initDatos() {
+    if (!getData('casas', null)) {
+        setData('casas', [
+            {
+                id: 'casa1', nombre: 'Casa en Pueblo Bello', ubicacion: 'Pueblo Bello, Cesar',
+                desc: 'Hermosa vista a la montaña, jacuzzi privado y zona de asados.',
+                precio: 300000, descuento: 0, personas: 6, habitaciones: 3,
+                caract: 'Jacuzzi privado, Zona de asados, WiFi, Parqueadero, TV por cable, Zona de hamacas',
+                img: 'img/casa1.png', imgs: ['img/casa1.png','img/casa2.png','img/casa3.png'],
+                activa: true, link: 'casa1.html'
+            },
+            {
+                id: 'casa2', nombre: 'Casa Campo Lety', ubicacion: 'Valledupar, Cesar',
+                desc: 'Amplia finca ideal para familias, con piscina y zonas verdes.',
+                precio: 450000, descuento: 0, personas: 10, habitaciones: 5,
+                caract: 'Piscina, Zonas verdes, WiFi, Cocina equipada, Zona BBQ',
+                img: 'img/casa8.png', imgs: ['img/casa8.png','img/casa7.png'],
+                activa: true, link: 'casa2.html'
+            }
+        ]);
+    }
+    if (!getData('reservas', null)) setData('reservas', []);
+    if (!getData('bloqueos', null)) setData('bloqueos', []);
+}
+
+initDatos();
+
+// ═══════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════
+function intentarLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    if (u === CREDENCIALES.user && p === CREDENCIALES.pass) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'flex';
+        renderDashboard();
+        renderReservasTabla();
+        renderCasasEditor();
+        renderCalAdmin();
+        renderBloqueos();
+        renderCasaSelector();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+        setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
+    }
+}
+function cerrarSesion() {
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+}
+
+// ═══════════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════════
+const titulos = {
+    'dashboard': '📊 Resumen',
+    'reservas': '📅 Reservas',
+    'disponibilidad': '🗓 Disponibilidad',
+    'casas': '🏡 Editar Casas',
+    'nueva-casa': '➕ Nueva Casa',
+    'usuarios': '👤 Usuarios & Descuentos'
+};
+function cambiarSeccion(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navIdx = ['dashboard','reservas','disponibilidad','casas','nueva-casa','usuarios'].indexOf(id);
+if(navIdx>=0) document.querySelectorAll('.nav-item')[navIdx].classList.add('active');
+    document.getElementById('topbarTitle').textContent = titulos[id];
+}
+
+// ═══════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════
+function renderDashboard() {
+    const casas = getData('casas', []);
+    const reservas = getData('reservas', []);
+    const bloqueos = getData('bloqueos', []);
+    const hoy = new Date();
+    const mesActual = hoy.getMonth();
+
+    const esMes = r => new Date(r.llegada).getMonth() === mesActual;
+    const pendientes = reservas.filter(r => r.estado === 'pendiente').length;
+
+    document.getElementById('statCasas').textContent = casas.filter(c => c.activa).length;
+    document.getElementById('statReservas').textContent = reservas.filter(esMes).length;
+    document.getElementById('statPendientes').textContent = pendientes;
+
+    // días bloqueados totales
+    let diasBloq = 0;
+    bloqueos.forEach(b => {
+        const d = Math.round((new Date(b.fin) - new Date(b.inicio)) / 86400000);
+        diasBloq += Math.max(0, d + 1);
+    });
+    document.getElementById('statBloqueados').textContent = diasBloq;
+
+    // últimas 5 reservas
+    const ultimas = [...reservas].reverse().slice(0, 5);
+    const tbody = document.getElementById('dashReservasCuerpo');
+    tbody.innerHTML = ultimas.length ? ultimas.map(r => `
+        <tr>
+            <td>${r.casaNombre}</td>
+            <td>${r.nombre}</td>
+            <td>${formatFechaDisplay(r.llegada)}</td>
+            <td>${formatFechaDisplay(r.salida)}</td>
+            <td><span class="badge-estado ${r.estado}">${r.estado}</span></td>
+        </tr>
+    `).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--texto-suave);padding:24px;">No hay reservas registradas aún</td></tr>`;
+}
+
+// ═══════════════════════════════════════════
+// RESERVAS
+// ═══════════════════════════════════════════
+function renderReservasTabla() {
+    const reservas = getData('reservas', []);
+    const tbody = document.getElementById('reservasCuerpo');
+    tbody.innerHTML = reservas.length ? [...reservas].reverse().map((r, i) => {
+        const idx = reservas.length - 1 - i;
+        const noches = Math.max(0, Math.round((new Date(r.salida) - new Date(r.llegada)) / 86400000));
+        const total = noches * r.precio;
+        return `
+        <tr>
+            <td>${r.casaNombre}</td>
+            <td>${r.nombre}</td>
+            <td>${r.telefono}</td>
+            <td>${formatFechaDisplay(r.llegada)}</td>
+            <td>${formatFechaDisplay(r.salida)}</td>
+            <td>${noches}</td>
+            <td>$${total.toLocaleString('es-CO')}</td>
+            <td>
+                <select onchange="cambiarEstado(${idx}, this.value)" style="border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:0.8rem;">
+                    <option value="pendiente" ${r.estado==='pendiente'?'selected':''}>Pendiente</option>
+                    <option value="confirmada" ${r.estado==='confirmada'?'selected':''}>Confirmada</option>
+                    <option value="cancelada" ${r.estado==='cancelada'?'selected':''}>Cancelada</option>
+                </select>
+            </td>
+            <td>
+                <button onclick="eliminarReserva(${idx})" style="background:var(--rojo);color:#fff;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:0.8rem;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>`;
+    }).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--texto-suave);padding:24px;">No hay reservas</td></tr>`;
+}
+
+function cambiarEstado(idx, estado) {
+    const reservas = getData('reservas', []);
+    reservas[idx].estado = estado;
+    setData('reservas', reservas);
+    renderDashboard();
+    mostrarToast('Estado actualizado', 'verde');
+}
+function eliminarReserva(idx) {
+    if (!confirm('¿Eliminar esta reserva?')) return;
+    const reservas = getData('reservas', []);
+    reservas.splice(idx, 1);
+    setData('reservas', reservas);
+    renderReservasTabla();
+    renderDashboard();
+    renderCalAdmin();
+    mostrarToast('Reserva eliminada');
+}
+
+function abrirModalNuevaReserva() {
+    const casas = getData('casas', []);
+    const sel = document.getElementById('rCasa');
+    sel.innerHTML = casas.map(c => `<option value="${c.id}" data-precio="${c.precio}">${c.nombre}</option>`).join('');
+    abrirModal('modalNuevaReserva');
+}
+function guardarReserva() {
+    const casas = getData('casas', []);
+    const casaId = document.getElementById('rCasa').value;
+    const casa = casas.find(c => c.id === casaId);
+    const nombre = document.getElementById('rNombreAdmin').value.trim();
+    const tel = document.getElementById('rTelAdmin').value.trim();
+    const llegada = document.getElementById('rLlegada').value;
+    const salida = document.getElementById('rSalida').value;
+    const notas = document.getElementById('rNotasAdmin').value.trim();
+
+    if (!nombre || !llegada || !salida) { mostrarToast('Completa los campos obligatorios', 'naranja'); return; }
+    if (salida <= llegada) { mostrarToast('La salida debe ser después de la llegada', 'naranja'); return; }
+
+    const reservas = getData('reservas', []);
+    reservas.push({
+        casaId, casaNombre: casa.nombre, nombre, telefono: tel,
+        llegada, salida, notas, precio: casa.precio,
+        estado: 'pendiente', fecha: new Date().toISOString()
+    });
+    setData('reservas', reservas);
+    cerrarModal('modalNuevaReserva');
+    renderReservasTabla();
+    renderDashboard();
+    renderCalAdmin();
+    mostrarToast('Reserva registrada', 'verde');
+
+    // Limpiar
+    ['rNombreAdmin','rTelAdmin','rLlegada','rSalida','rNotasAdmin'].forEach(id => document.getElementById(id).value = '');
+}
+
+// ═══════════════════════════════════════════
+// DISPONIBILIDAD / CALENDARIO
+// ═══════════════════════════════════════════
+let calAdminMesActual = new Date();
+calAdminMesActual = new Date(calAdminMesActual.getFullYear(), calAdminMesActual.getMonth(), 1);
+let calCasaActual = null;
+
+function renderCasaSelector() {
+    const casas = getData('casas', []);
+    if (!calCasaActual && casas.length) calCasaActual = casas[0].id;
+
+    const cont = document.getElementById('calCasaSelector');
+    cont.innerHTML = casas.map(c => `
+        <button class="casa-tab ${c.id === calCasaActual ? 'activo' : ''}" onclick="selCalCasa('${c.id}')">
+            ${c.nombre}
+        </button>
+    `).join('');
+
+    const bloCasa = document.getElementById('bloCasa');
+    bloCasa.innerHTML = casas.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+}
+function selCalCasa(id) {
+    calCasaActual = id;
+    renderCasaSelector();
+    renderCalAdmin();
+    renderBloqueos();
+}
+
+function calAdminMes(delta) {
+    calAdminMesActual = new Date(calAdminMesActual.getFullYear(), calAdminMesActual.getMonth() + delta, 1);
+    renderCalAdmin();
+}
+
+function renderCalAdmin() {
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    document.getElementById('calAdminTitulo').textContent =
+        meses[calAdminMesActual.getMonth()] + ' ' + calAdminMesActual.getFullYear();
+
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const reservas = getData('reservas', []).filter(r => r.casaId === calCasaActual && r.estado !== 'cancelada');
+    const bloqueos = getData('bloqueos', []).filter(b => b.casaId === calCasaActual);
+
+    function estaReservado(fecha) {
+        return reservas.some(r => {
+            const l = new Date(r.llegada); l.setHours(0,0,0,0);
+            const s = new Date(r.salida); s.setHours(0,0,0,0);
+            return fecha >= l && fecha < s;
+        });
+    }
+    function estaBloqueado(fecha) {
+        return bloqueos.some(b => {
+            const ini = new Date(b.inicio); ini.setHours(0,0,0,0);
+            const fin = new Date(b.fin); fin.setHours(0,0,0,0);
+            return fecha >= ini && fecha <= fin;
+        });
+    }
+
+    const grid = document.getElementById('calAdminGrid');
+    const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    let html = dias.map(d => `<div class="cal-admin-dn">${d}</div>`).join('');
+
+    const primerDia = new Date(calAdminMesActual.getFullYear(), calAdminMesActual.getMonth(), 1);
+    const ultimoDia = new Date(calAdminMesActual.getFullYear(), calAdminMesActual.getMonth() + 1, 0);
+
+    for (let i = 0; i < primerDia.getDay(); i++) html += `<div class="cal-admin-dia vacio"></div>`;
+
+    for (let d = 1; d <= ultimoDia.getDate(); d++) {
+        const fecha = new Date(calAdminMesActual.getFullYear(), calAdminMesActual.getMonth(), d);
+        fecha.setHours(0,0,0,0);
+        const esHoy = fecha.getTime() === hoy.getTime();
+        const esPasado = fecha < hoy;
+        const reservado = estaReservado(fecha) || estaBloqueado(fecha);
+
+        let cls = 'cal-admin-dia';
+        if (esPasado) cls += ' pasado';
+        else if (esHoy) cls += ' hoy';
+        if (reservado && !esPasado) cls += ' reservado';
+        else if (!esPasado && !esHoy) cls += ' disponible';
+
+        // tooltip con info de reserva
+        let reservaInfo = '';
+        const r = reservas.find(r => {
+            const l = new Date(r.llegada); l.setHours(0,0,0,0);
+            const s = new Date(r.salida); s.setHours(0,0,0,0);
+            return fecha >= l && fecha < s;
+        });
+        if (r) reservaInfo = ` title="${r.nombre} · ${formatFechaDisplay(r.llegada)}→${formatFechaDisplay(r.salida)}"`;
+
+        html += `<div class="${cls}"${reservaInfo}>${d}</div>`;
+    }
+
+    grid.innerHTML = html;
+}
+
+// Bloqueos
+function abrirModalBloqueo() {
+    renderCasaSelector();
+    abrirModal('modalBloqueo');
+}
+function guardarBloqueo() {
+    const casaId = document.getElementById('bloCasa').value;
+    const inicio = document.getElementById('bloInicio').value;
+    const fin = document.getElementById('bloFin').value;
+    const tipo = document.getElementById('bloTipo').value;
+    const motivo = document.getElementById('bloMotivo').value.trim();
+    if (!inicio || !fin) { mostrarToast('Selecciona las fechas', 'naranja'); return; }
+    if (fin < inicio) { mostrarToast('La fecha fin debe ser después del inicio', 'naranja'); return; }
+    const bloqueos = getData('bloqueos', []);
+    const casas = getData('casas', []);
+    const casa = casas.find(c => c.id === casaId);
+    bloqueos.push({ id: Date.now(), casaId, casaNombre: casa.nombre, inicio, fin, tipo: tipo || 'otro', motivo: motivo || 'Sin especificar' });
+    setData('bloqueos', bloqueos);
+    cerrarModal('modalBloqueo');
+    renderBloqueos();
+    renderCalAdmin();
+    renderDashboard();
+    mostrarToast('Período bloqueado', 'verde');
+    ['bloInicio','bloFin','bloMotivo'].forEach(id => document.getElementById(id).value = '');
+}
+function renderBloqueos() {
+    const bloqueos = getData('bloqueos', []).filter(b => !calCasaActual || b.casaId === calCasaActual);
+    const cont = document.getElementById('bloqueoLista');
+    cont.innerHTML = bloqueos.length ? bloqueos.map(b => `
+        <div class="bloqueo-item">
+            <div>
+                <div class="bloqueo-fechas">
+                    <i class="fas fa-lock" style="color:var(--naranja);margin-right:6px;"></i>
+                    ${b.casaNombre} · ${formatFechaDisplay(b.inicio)} → ${formatFechaDisplay(b.fin)} <span style='background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:8px;font-size:0.75rem;margin-left:6px;'>${{mantenimiento:'🔧',aseo:'🧹',reserva_propia:'🏠',otro:'📌'}[b.tipo]||'📌'} ${b.tipo||'otro'}</span>
+                </div>
+                <div class="bloqueo-motivo">${b.motivo}</div>
+            </div>
+            <button class="btn-del-bloqueo" onclick="eliminarBloqueo(${b.id})">
+                <i class="fas fa-trash"></i> Quitar
+            </button>
+        </div>
+    `).join('') : `<p style="color:var(--texto-suave);font-size:0.9rem;padding:16px 0;">No hay períodos bloqueados para esta casa.</p>`;
+}
+function eliminarBloqueo(id) {
+    let bloqueos = getData('bloqueos', []);
+    bloqueos = bloqueos.filter(b => b.id !== id);
+    setData('bloqueos', bloqueos);
+    renderBloqueos();
+    renderCalAdmin();
+    renderDashboard();
+    mostrarToast('Bloqueo eliminado');
+}
+
+// ═══════════════════════════════════════════
+// EDITOR DE CASAS
+// ═══════════════════════════════════════════
+function renderCasasEditor() {
+    const casas = getData('casas', []);
+    const grid = document.getElementById('casasEditorGrid');
+    grid.innerHTML = casas.map((c, i) => `
+        <div class="casa-editor-card">
+            <div class="casa-editor-img">
+                <img src="${c.img}" alt="${c.nombre}" onerror="this.src='img/casa1.png'" id="imgPreview${i}">
+                <div class="overlay-btns">
+                    <label class="btn-img-overlay" style="cursor:pointer;">
+                        <i class="fas fa-camera"></i> Cambiar foto
+                        <input type="file" accept="image/*" style="display:none" onchange="cambiarImgCasa(${i}, event)">
+                    </label>
+                </div>
+            </div>
+            <div class="casa-editor-body">
+                <label>Nombre</label>
+                <input type="text" id="eNombre${i}" value="${c.nombre}">
+
+                <label>Ubicación</label>
+                <input type="text" id="eUbicacion${i}" value="${c.ubicacion}">
+
+                <label>Descripción</label>
+                <textarea id="eDesc${i}">${c.desc}</textarea>
+
+                <label>Precio por noche (COP)
+                    ${c.descuento > 0 ? `<span class="descuento-badge">-${c.descuento}% OFF</span>` : ''}
+                </label>
+                <div class="precio-row">
+                    <div>
+                        <label style="font-size:0.72rem;color:var(--texto-suave);">Precio base</label>
+                        <input type="number" id="ePrecio${i}" value="${c.precio}" min="0">
+                    </div>
+                    <div>
+                        <label style="font-size:0.72rem;color:var(--texto-suave);">Descuento %</label>
+                        <input type="number" id="eDescuento${i}" value="${c.descuento}" min="0" max="100">
+                    </div>
+                </div>
+
+                <label>Capacidad (personas)</label>
+                <input type="number" id="ePersonas${i}" value="${c.personas}" min="1">
+
+                <label>Habitaciones</label>
+                <input type="number" id="eHabitaciones${i}" value="${c.habitaciones}" min="1">
+
+                <label>Características (separadas por coma)</label>
+                <input type="text" id="eCaract${i}" value="${c.caract}">
+
+                <button class="btn-guardar-casa" onclick="guardarCasa(${i})">
+                    <i class="fas fa-save"></i> Guardar cambios
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function cambiarImgCasa(idx, event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const casas = getData('casas', []);
+        casas[idx].img = e.target.result;
+        setData('casas', casas);
+        document.getElementById('imgPreview' + idx).src = e.target.result;
+        mostrarToast('Imagen actualizada', 'verde');
+    };
+    reader.readAsDataURL(file);
+}
+
+function guardarCasa(idx) {
+    const casas = getData('casas', []);
+    const c = casas[idx];
+    c.nombre = document.getElementById('eNombre' + idx).value.trim();
+    c.ubicacion = document.getElementById('eUbicacion' + idx).value.trim();
+    c.desc = document.getElementById('eDesc' + idx).value.trim();
+    c.precio = parseInt(document.getElementById('ePrecio' + idx).value) || 0;
+    c.descuento = parseInt(document.getElementById('eDescuento' + idx).value) || 0;
+    c.personas = parseInt(document.getElementById('ePersonas' + idx).value) || 1;
+    c.habitaciones = parseInt(document.getElementById('eHabitaciones' + idx).value) || 1;
+    c.caract = document.getElementById('eCaract' + idx).value.trim();
+    setData('casas', casas);
+    renderDashboard();
+    renderCasaSelector();
+    renderCasasEditor();
+    mostrarToast('Casa actualizada correctamente ✓', 'verde');
+}
+
+// ═══════════════════════════════════════════
+// NUEVA CASA
+// ═══════════════════════════════════════════
+let nuevasImagenes = [];
+function previewNuevasImgs(event) {
+    const files = Array.from(event.target.files);
+    const preview = document.getElementById('nuevasImgsPreview');
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            nuevasImagenes.push(e.target.result);
+            preview.innerHTML = nuevasImagenes.map((src, i) => `
+                <div class="img-preview-item">
+                    <img src="${src}" alt="">
+                    <button class="del-img" onclick="quitarImgNueva(${i})">✕</button>
+                </div>
+            `).join('');
+        };
+        reader.readAsDataURL(file);
+    });
+}
+function quitarImgNueva(i) {
+    nuevasImagenes.splice(i, 1);
+    document.getElementById('nuevasImgsPreview').innerHTML = nuevasImagenes.map((src, i) => `
+        <div class="img-preview-item">
+            <img src="${src}" alt="">
+            <button class="del-img" onclick="quitarImgNueva(${i})">✕</button>
+        </div>
+    `).join('');
+}
+
+function crearNuevaCasa() {
+    const nombre = document.getElementById('nuevaNombre').value.trim();
+    const ubic = document.getElementById('nuevaUbicacion').value.trim();
+    const desc = document.getElementById('nuevaDesc').value.trim();
+    const precio = parseInt(document.getElementById('nuevaPrecio').value) || 0;
+    const desc2 = parseInt(document.getElementById('nuevaDescuento').value) || 0;
+    const personas = parseInt(document.getElementById('nuevaPersonas').value) || 1;
+    const hab = parseInt(document.getElementById('nuevaHabitaciones').value) || 1;
+    const caract = document.getElementById('nuevaCaract').value.trim();
+
+    if (!nombre || !ubic || !desc || !precio) {
+        mostrarToast('Completa los campos obligatorios *', 'naranja'); return;
+    }
+
+    const casas = getData('casas', []);
+    const id = 'casa' + (casas.length + 1) + '_' + Date.now();
+    const imgPrincipal = nuevasImagenes[0] || 'img/casa1.png';
+
+    casas.push({
+        id, nombre, ubicacion: ubic, desc, precio, descuento: desc2,
+        personas, habitaciones: hab, caract, img: imgPrincipal,
+        imgs: nuevasImagenes.length ? nuevasImagenes : ['img/casa1.png'],
+        activa: true, link: '#', esNueva: true
+    });
+    setData('casas', casas);
+
+    // Limpiar formulario
+    ['nuevaNombre','nuevaUbicacion','nuevaDesc','nuevaPrecio','nuevaDescuento','nuevaPersonas','nuevaHabitaciones','nuevaCaract'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('nuevasImgsPreview').innerHTML = '';
+    nuevasImagenes = [];
+
+    renderCasasEditor();
+    renderDashboard();
+    renderCasaSelector();
+    mostrarToast('🏡 Casa creada y publicada', 'verde');
+    cambiarSeccion('casas');
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function formatFechaDisplay(str) {
+    if (!str) return '—';
+    const [y, m, d] = str.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Cerrar modales al hacer clic afuera
+document.querySelectorAll('.modal-bg').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+function mostrarToast(msg, tipo = '') {
+    const t = document.getElementById('toast');
+    t.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
+    t.className = 'toast ' + tipo + ' show';
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Setear fecha mínima en modales de fecha
+document.addEventListener('DOMContentLoaded', () => {
+    const hoy = new Date().toISOString().split('T')[0];
+    ['rLlegada','rSalida','bloInicio','bloFin'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.min = hoy;
+    });
+});
+</script>
+</body>
+</html>
+<!-- PATCH: renderUsuarios + improved calendar -->
+<script>
+// ── USUARIOS ──
+function renderUsuarios() {
+    const usuarios = (JSON.parse(localStorage.getItem('heiman_usuarios')) || []);
+    const reservas = (JSON.parse(localStorage.getItem('heiman_reservas')) || []);
+    const grid = document.getElementById('usuariosGrid');
+    if (!grid) return;
+
+    if (!usuarios.length) {
+        grid.innerHTML = '<p style="color:#aaa;grid-column:1/-1;padding:24px;">No hay usuarios registrados aún.</p>';
+        return;
+    }
+
+    grid.innerHTML = usuarios.map(u => {
+        const rRealizadas = reservas.filter(r => r.usuarioId === u.id && r.estado === 'confirmada').length;
+        let nivel = 'Nuevo'; let desc = 0; let color = '#888';
+        if (rRealizadas >= 5)      { nivel = '⭐ VIP';      desc = 15; color='#1565c0'; }
+        else if (rRealizadas >= 3) { nivel = '🌟 Frecuente'; desc = 10; color='#2e7d32'; }
+        else if (rRealizadas >= 1) { nivel = '✅ Activo';    desc = 5;  color='#388e3c'; }
+
+        return `<div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="width:44px;height:44px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
+                    <i class="fas fa-user" style="color:#2e7d32;"></i>
+                </div>
+                <div>
+                    <div style="font-weight:700;">${u.nombre}</div>
+                    <div style="font-size:0.8rem;color:#888;">${u.email}</div>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:8px;">
+                <span>Reservas confirmadas</span><b>${rRealizadas}</b>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:8px;">
+                <span>Teléfono</span><span>${u.telefono || '—'}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+                <span style="background:#e8f5e9;color:${color};padding:3px 12px;border-radius:12px;font-size:0.8rem;font-weight:700;">${nivel}</span>
+                ${desc > 0 ? `<span style="background:#fff3e0;color:#e65100;padding:3px 12px;border-radius:12px;font-size:0.8rem;font-weight:700;">-${desc}% descuento</span>` : '<span style="color:#aaa;font-size:0.8rem;">Sin descuento aún</span>'}
+            </div>
+            <div style="font-size:0.75rem;color:#bbb;margin-top:8px;">Registrado: ${new Date(u.fechaRegistro).toLocaleDateString('es-CO')}</div>
+        </div>`;
+    }).join('');
+}
+
+// Override cambiarSeccion to call renderUsuarios
+const _origCambiar = window.cambiarSeccion;
+window.cambiarSeccion = function(id) {
+    _origCambiar(id);
+    if (id === 'usuarios') renderUsuarios();
+};
+
+// Override renderCalAdmin to show aseo days differently
+const _origRenderCal = window.renderCalAdmin;
+window.renderCalAdmin = function() {
+    const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    if (!window.calAdminMesActual) return;
+    document.getElementById('calAdminTitulo').textContent =
+        meses[calAdminMesActual.getMonth()] + ' ' + calAdminMesActual.getFullYear();
+
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const reservas = (JSON.parse(localStorage.getItem('heiman_reservas')) || [])
+        .filter(r => r.casaId === calCasaActual && r.estado !== 'cancelada');
+    const bloqueos = (JSON.parse(localStorage.getItem('heiman_bloqueos')) || [])
+        .filter(b => b.casaId === calCasaActual);
+
+    // Build sets
+    const diasReservados  = new Set();
+    const diasAseo        = new Set(); // día de checkout = aseo 40 min
+    const diasMantenimiento = new Set();
+
+    reservas.forEach(r => {
+        const ini = new Date(r.llegada); ini.setHours(0,0,0,0);
+        const noches = r.noches || Math.round((new Date(r.salida) - ini) / 86400000);
+        for (let i = 0; i < noches; i++) {
+            const d = new Date(ini); d.setDate(d.getDate() + i);
+            diasReservados.add(d.toISOString().split('T')[0]);
+        }
+        // Día de salida = aseo
+        const checkout = new Date(ini); checkout.setDate(checkout.getDate() + noches);
+        diasAseo.add(checkout.toISOString().split('T')[0]);
+    });
+
+    bloqueos.forEach(b => {
+        const ini = new Date(b.inicio); ini.setHours(0,0,0,0);
+        const fin = new Date(b.fin); fin.setHours(0,0,0,0);
+        for (let d = new Date(ini); d <= fin; d.setDate(d.getDate() + 1)) {
+            const k = d.toISOString().split('T')[0];
+            if (b.tipo === 'mantenimiento' || b.tipo === 'aseo') diasMantenimiento.add(k);
+            else diasReservados.add(k);
+        }
+    });
+
+    const grid = document.getElementById('calAdminGrid');
+    const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    let html = dias.map(d => `<div class="cal-admin-dn">${d}</div>`).join('');
+
+    const primerDia = new Date(calAdminMesActual.getFullYear(), calAdminMesActual.getMonth(), 1);
+    const ultimoDia = new Date(calAdminMesActual.getFullYear(), calAdminMesActual.getMonth() + 1, 0);
+
+    for (let i = 0; i < primerDia.getDay(); i++) html += `<div class="cal-admin-dia vacio"></div>`;
+
+    for (let d = 1; d <= ultimoDia.getDate(); d++) {
+        const fecha = new Date(calAdminMesActual.getFullYear(), calAdminMesActual.getMonth(), d);
+        fecha.setHours(0,0,0,0);
+        const k = fecha.toISOString().split('T')[0];
+        const esHoy = fecha.getTime() === hoy.getTime();
+        const esPasado = fecha < hoy;
+
+        let cls = 'cal-admin-dia';
+        let style = '';
+        let tooltip = '';
+
+        if (esPasado) {
+            cls += ' pasado';
+        } else if (diasReservados.has(k)) {
+            cls += ' reservado';
+            const r = reservas.find(r => {
+                const ini = new Date(r.llegada); ini.setHours(0,0,0,0);
+                const noches = r.noches || Math.round((new Date(r.salida) - ini) / 86400000);
+                const fin = new Date(ini); fin.setDate(fin.getDate() + noches - 1);
+                return fecha >= ini && fecha <= fin;
+            });
+            if (r) tooltip = ` title="🏠 ${r.nombre} · ${r.hora || '14:00'} · ${r.noches || '?'} noches"`;
+        } else if (diasAseo.has(k)) {
+            style = ' style="background:#ffe0b2;color:#e65100;font-weight:700;"';
+            tooltip = ` title="🧹 Día de aseo (40 min) — no disponible hasta terminar limpieza"`;
+        } else if (diasMantenimiento.has(k)) {
+            style = ' style="background:#e1bee7;color:#7b1fa2;font-weight:700;"';
+            tooltip = ` title="🔧 Mantenimiento / bloqueado"`;
+        } else {
+            cls += ' disponible';
+            tooltip = ` title="✅ Libre — disponible para reservar"`;
+        }
+
+        if (esHoy) cls += ' hoy';
+
+        html += `<div class="${cls}"${style}${tooltip}>${d}</div>`;
+    }
+
+    grid.innerHTML = html;
+};
+
+// Override the init to also call new renderCalAdmin
+const _origLogin2 = window.intentarLogin;
+window.intentarLogin = function() {
+    // call original
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    if (u === 'admin' && p === 'casas2026') {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'flex';
+        renderDashboard();
+        renderReservasTabla();
+        renderCasasEditor();
+        renderCalAdmin();
+        renderBloqueos();
+        renderCasaSelector();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+        setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
+    }
+};
+</script>
