@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casa en Pueblo Bello | Casas Campestres</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        var PRECIO_NOCHE = 300000;
+        var CASA_NOMBRE  = 'Casa en Pueblo Bello';
+        var CASA_ID      = 'casa1';
+    </script>
+    <style>
+        /* ── USUARIO BAR ── */
+        .usuario-bar {
+            background:#fff; border-bottom:1px solid #eee;
+            padding:8px 24px; display:flex; justify-content:flex-end;
+            align-items:center; gap:10px; font-size:0.88rem;
+        }
+        .btn-usuario {
+            background:none; border:2px solid #2e7d32; color:#2e7d32;
+            padding:6px 16px; border-radius:20px; cursor:pointer; font-weight:600;
+            transition:all 0.2s;
+        }
+        .btn-usuario:hover { background:#2e7d32; color:#fff; }
+        .btn-registrar { background:#2e7d32; color:#fff; }
+        .btn-registrar:hover { background:#1b5e20; }
+        .usuario-info-mini { display:flex; align-items:center; gap:10px; }
+        .usuario-nombre { font-weight:700; color:#2e7d32; }
+        .usuario-nivel { background:#e8f5e9; color:#2e7d32; padding:2px 10px; border-radius:12px; font-size:0.78rem; font-weight:700; }
+        .btn-logout-mini { background:none; border:1px solid #ccc; color:#888; padding:4px 12px; border-radius:12px; cursor:pointer; font-size:0.8rem; }
+
+        /* ── HORA ENTRADA ── */
+        .hora-entrada-wrap { margin:12px 0; background:#f9f9f9; border-radius:10px; padding:12px 16px; border:1px solid #e0e0e0; }
+        .hora-entrada-wrap label { font-size:0.85rem; font-weight:700; color:#555; display:block; margin-bottom:6px; }
+        .hora-entrada-wrap select {
+            width:100%; padding:8px 12px; border:2px solid #e0e0e0; border-radius:8px;
+            font-size:0.95rem; outline:none; cursor:pointer;
+        }
+        .hora-entrada-wrap select:focus { border-color:#4caf50; }
+        .info-aseo { font-size:0.78rem; color:#888; margin-top:6px; }
+
+        /* ── PAGO STEP ── */
+        #pagoStep { display:none; padding:0 4px; }
+        .pago-resumen-box {
+            background:#f1f8f1; border-radius:10px; padding:14px 18px;
+            margin-bottom:18px; font-size:0.9rem; line-height:1.7;
+            border-left:4px solid #2e7d32;
+        }
+        .metodos-pago { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+        .metodo-card {
+            border:2px solid #e0e0e0; border-radius:10px; padding:14px;
+            cursor:pointer; transition:all 0.2s; text-align:center;
+        }
+        .metodo-card:hover, .metodo-card.seleccionado { border-color:#2e7d32; background:#f1f8f1; }
+        .metodo-card i { font-size:1.6rem; display:block; margin-bottom:6px; color:#2e7d32; }
+        .metodo-card label { cursor:pointer; font-size:0.85rem; font-weight:600; }
+        .metodo-card input[type=radio] { display:none; }
+        .btn-pagar {
+            width:100%; padding:14px; background:linear-gradient(135deg,#1b5e20,#4caf50);
+            color:#fff; border:none; border-radius:10px; font-size:1.05rem; font-weight:700;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+            transition:transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-pagar:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(46,125,50,0.35); }
+        .btn-pagar:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+        .pago-seguro-badge {
+            text-align:center; font-size:0.76rem; color:#888; margin-top:10px;
+        }
+        .paso-dot { width:10px; height:10px; border-radius:50%; background:#ddd; display:inline-block; margin:0 4px; }
+        .paso-dot.activo { background:#2e7d32; }
+
+        /* ── MODAL USUARIO ── */
+        .modal-usuario-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:600;
+            display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none;
+            transition:opacity 0.25s;
+        }
+        .modal-usuario-overlay.active { opacity:1; pointer-events:all; }
+        .modal-usuario-box {
+            background:#fff; border-radius:16px; padding:32px; max-width:420px; width:90%;
+            box-shadow:0 20px 60px rgba(0,0,0,0.2); max-height:90vh; overflow-y:auto;
+        }
+        .tabs-usuario { display:flex; gap:0; margin-bottom:24px; border-radius:10px; overflow:hidden; border:2px solid #e0e0e0; }
+        .tab-u {
+            flex:1; padding:10px; text-align:center; cursor:pointer; font-weight:600;
+            background:#f9f9f9; border:none; font-size:0.92rem; transition:all 0.2s;
+        }
+        .tab-u.activo { background:#2e7d32; color:#fff; }
+        .form-u label { display:block; font-size:0.78rem; font-weight:700; color:#888; text-transform:uppercase; margin-bottom:4px; margin-top:12px; }
+        .form-u input {
+            width:100%; padding:10px 14px; border:2px solid #e0e0e0; border-radius:8px;
+            font-size:0.95rem; outline:none; transition:border 0.2s;
+        }
+        .form-u input:focus { border-color:#4caf50; }
+        .btn-form-u {
+            width:100%; margin-top:16px; padding:12px; background:#2e7d32; color:#fff;
+            border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer;
+        }
+        .btn-form-u:hover { background:#1b5e20; }
+        .msg-usuario { font-size:0.88rem; margin-top:10px; min-height:18px; text-align:center; }
+        .desc-frecuente {
+            background:#fff3e0; border-radius:8px; padding:12px; margin-top:14px;
+            font-size:0.82rem; line-height:1.6; border-left:3px solid #ff6f00;
+        }
+
+        /* ── RESEÑAS ── */
+        .resenas-form {
+            background:#f9f9f9; border-radius:12px; padding:20px; margin-bottom:24px;
+            border:1px solid #e0e0e0;
+        }
+        .resenas-form h4 { margin-bottom:12px; color:#2e7d32; }
+        .estrellas-selector { display:flex; gap:8px; margin-bottom:12px; }
+        .estrellas-selector input[type=radio] { display:none; }
+        .estrellas-selector label { font-size:1.6rem; cursor:pointer; color:#ddd; transition:color 0.15s; }
+        .estrellas-selector input[type=radio]:checked ~ label,
+        .estrellas-selector label:hover,
+        .estrellas-selector label:hover ~ label { color:#f59e0b; }
+        .estrellas-selector { flex-direction:row-reverse; justify-content:flex-end; }
+        .resenas-form textarea {
+            width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px;
+            font-size:0.92rem; resize:vertical; min-height:80px; font-family:inherit; outline:none;
+        }
+        .resenas-form textarea:focus { border-color:#4caf50; }
+        .btn-publicar-resena {
+            margin-top:10px; padding:10px 24px; background:#2e7d32; color:#fff;
+            border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.95rem;
+        }
+        .no-sesion-resena {
+            background:#e3f2fd; border-radius:10px; padding:16px; text-align:center;
+            font-size:0.9rem; color:#1565c0; margin-bottom:20px;
+        }
+        .cal-ocupado { background:#ffcdd2 !important; color:#c62828 !important; cursor:not-allowed !important; }
+        .cal-hoy { border:2px solid #ff6f00 !important; font-weight:700; }
+    </style>
+</head>
+<body>
+
+<!-- BARRA DE USUARIO -->
+<div class="usuario-bar">
+    <div id="usuarioBtnArea"></div>
+</div>
+
+<!-- ENCABEZADO -->
+<header class="header">
+    <div class="header-content">
+        <h1 class="logo">🌿 <span>Casas Campestres</span></h1>
+        <p class="slogan">Descubre el paraíso en la naturaleza</p>
+    </div>
+</header>
+
+<nav class="navbar">
+    <div class="nav-container">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Inicio</a></li>
+            <li><a href="index.html#casas"><i class="fas fa-tree"></i> Casas</a></li>
+            <li><a href="index.html#contacto"><i class="fas fa-envelope"></i> Contacto</a></li>
+        </ul>
+    </div>
+</nav>
+
+<main class="detalle-container">
+    <div class="breadcrumb">
+        <a href="index.html">Inicio</a> &gt;
+        <a href="index.html#casas">Casas</a> &gt;
+        <span>Casa en Pueblo Bello</span>
+    </div>
+
+    <div class="detalle-grid">
+        <div class="galeria-container">
+            <div class="galeria-principal">
+                <img id="imagenPrincipal" src="img/casa1.png" alt="Casa en Pueblo Bello">
+            </div>
+            <div class="galeria-miniaturas">
+                <img src="img/casa2.png" onclick="cambiarImagen(this.src)" alt="Vista 1">
+                <img src="img/casa3.png" onclick="cambiarImagen(this.src)" alt="Vista 2">
+                <img src="img/casa4.png" onclick="cambiarImagen(this.src)" alt="Vista 3">
+                <img src="img/casa5.png" onclick="cambiarImagen(this.src)" alt="Vista 4">
+            </div>
+        </div>
+
+        <div class="info-detalle">
+            <h1 class="titulo-casa">Casa en Pueblo Bello</h1>
+            <div class="rating-detalle">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                <i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                <span class="rating-text" id="ratingText">4.5 (reseñas)</span>
+            </div>
+            <div class="precio-detalle">
+                <span class="precio-valor">$300.000</span>
+                <span class="precio-periodo">/noche</span>
+            </div>
+            <div class="descripcion-detalle">
+                <h3>Sobre este alojamiento</h3>
+                <p>Escápate a la tranquilidad de Pueblo Bello, un lugar mágico rodeado de naturaleza. Disfruta de impresionantes vistas a la montaña desde la terraza, relájate en el jacuzzi privado y comparte momentos especiales en la zona de asados.</p>
+            </div>
+            <div class="caracteristicas-detalle">
+                <h3>Características principales</h3>
+                <div class="caracteristicas-grid">
+                    <div class="caract-item"><i class="fas fa-users"></i><span>Hasta 6 personas</span></div>
+                    <div class="caract-item"><i class="fas fa-bed"></i><span>3 habitaciones</span></div>
+                    <div class="caract-item"><i class="fas fa-bath"></i><span>2 baños</span></div>
+                    <div class="caract-item"><i class="fas fa-hot-tub"></i><span>Jacuzzi privado</span></div>
+                    <div class="caract-item"><i class="fas fa-utensils"></i><span>Zona de asados</span></div>
+                    <div class="caract-item"><i class="fas fa-wifi"></i><span>Wifi gratis</span></div>
+                    <div class="caract-item"><i class="fas fa-car"></i><span>Parqueadero</span></div>
+                    <div class="caract-item"><i class="fas fa-tv"></i><span>TV por cable</span></div>
+                </div>
+            </div>
+            <div class="acciones-detalle">
+                <a href="index.html" class="btn-volver"><i class="fas fa-arrow-left"></i> Volver</a>
+                <button class="btn-abrir-reserva" onclick="abrirModalReserva()">
+                    <i class="fas fa-calendar-check"></i> Reservar ahora
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESEÑAS -->
+    <section class="resenas">
+        <div id="resenasEncabezado"></div>
+
+        <!-- Formulario nueva reseña -->
+        <div id="formNuevaResena" class="resenas-form" style="display:none">
+            <h4><i class="fas fa-star" style="color:#f59e0b"></i> Deja tu reseña, <span id="resenaUsuarioNombre"></span></h4>
+            <div class="estrellas-selector">
+                <input type="radio" id="r5" name="resenaNota" value="5"><label for="r5" title="5">★</label>
+                <input type="radio" id="r4" name="resenaNota" value="4"><label for="r4" title="4">★</label>
+                <input type="radio" id="r3" name="resenaNota" value="3"><label for="r3" title="3">★</label>
+                <input type="radio" id="r2" name="resenaNota" value="2"><label for="r2" title="2">★</label>
+                <input type="radio" id="r1" name="resenaNota" value="1"><label for="r1" title="1">★</label>
+            </div>
+            <textarea id="resenaTexto" placeholder="¿Cómo fue tu experiencia? Cuéntanos todo..."></textarea>
+            <button class="btn-publicar-resena" onclick="publicarResena()">
+                <i class="fas fa-paper-plane"></i> Publicar reseña
+            </button>
+        </div>
+
+        <div id="noSesionResena" class="no-sesion-resena" style="display:none">
+            <i class="fas fa-info-circle"></i>
+            <a href="#" onclick="abrirModalUsuario('login'); return false;" style="color:#1565c0; font-weight:700;">Inicia sesión</a>
+            para dejar tu reseña
+        </div>
+
+        <div class="resenas-grid" id="resenasGrid"></div>
+    </section>
+
+    <section class="instagram-section">
+        <h2><i class="fab fa-instagram"></i> Síguenos en Instagram</h2>
+        <p>Descubre más fotos y vive la experiencia desde nuestra galería</p>
+        <div class="instagram-btn-container">
+            <a href="https://www.instagram.com/casa_lospinos1/" class="btn-instagram" target="_blank">
+                <i class="fab fa-instagram"></i> Ver más en Instagram
+            </a>
+        </div>
+    </section>
+</main>
+
+<!-- MODAL DE RESERVAS -->
+<div class="modal-overlay" id="modalReserva">
+    <div class="modal-reserva">
+        <div class="modal-header">
+            <h2><i class="fas fa-calendar-check"></i> Reservar Casa en Pueblo Bello</h2>
+            <button class="btn-cerrar-modal" onclick="cerrarModalReserva()">✕</button>
+        </div>
+
+        <!-- Indicador de pasos -->
+        <div style="text-align:center;padding:10px 0 4px;" id="pasoIndicadores">
+            <span class="paso-dot activo"></span>
+            <span class="paso-dot"></span>
+            <span class="paso-dot"></span>
+        </div>
+
+        <div id="formularioReserva">
+            <div class="calendario-wrap">
+                <p style="font-size:0.88rem; color:#555; margin-bottom:8px;">
+                    <i class="fas fa-info-circle" style="color:var(--primary-color)"></i>
+                    Selecciona tu <strong>fecha de llegada</strong> y <strong>salida</strong>.
+                    Los días en rojo no están disponibles.
+                </p>
+                <div class="calendario-nav">
+                    <button id="calPrev" onclick="cambiarMes(-1)">&#8249;</button>
+                    <span id="calMesAnio"></span>
+                    <button onclick="cambiarMes(1)">&#8250;</button>
+                </div>
+                <div class="calendario-grid" id="calGrid"></div>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:0.78rem;margin-top:8px;color:#888;">
+                    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ffcdd2;margin-right:4px;"></span>No disponible</span>
+                    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e8f5e9;margin-right:4px;"></span>Disponible</span>
+                    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--primary-color);margin-right:4px;"></span>Seleccionado</span>
+                </div>
+                <div class="aviso-maxdias" id="avisoMaxDias"></div>
+            </div>
+
+            <!-- Hora de entrada -->
+            <div class="hora-entrada-wrap">
+                <label><i class="fas fa-clock"></i> Hora de entrada (check-in)</label>
+                <select id="selHoraEntrada" onchange="actualizarHora()">
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM — Mediodía</option>
+                    <option value="13:00">1:00 PM</option>
+                    <option value="14:00" selected>2:00 PM (recomendado)</option>
+                    <option value="15:00">3:00 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                    <option value="17:00">5:00 PM</option>
+                    <option value="18:00">6:00 PM</option>
+                </select>
+                <div class="info-aseo" id="infoAseo">ℹ️ Check-out = check-in + 24h por noche · 40 min de aseo antes de próxima entrada</div>
+            </div>
+
+            <div class="reserva-resumen">
+                <div class="resumen-row">
+                    <span><i class="fas fa-sign-in-alt"></i> Llegada</span>
+                    <strong id="resInicio">Selecciona fecha</strong>
+                </div>
+                <div class="resumen-row">
+                    <span><i class="fas fa-sign-out-alt"></i> Salida</span>
+                    <strong id="resFin">---</strong>
+                </div>
+                <div class="resumen-row">
+                    <span><i class="fas fa-moon"></i> Noches × $300.000</span>
+                    <span id="resNoches">0 noches</span>
+                </div>
+                <div class="resumen-row">
+                    <span>💰 Total</span>
+                    <span id="resTotal">$ 0</span>
+                </div>
+            </div>
+
+            <div class="reserva-form">
+                <label for="rNombre"><i class="fas fa-user"></i> Nombre completo *</label>
+                <input type="text" id="rNombre" placeholder="Ej: Juan Pérez" required>
+
+                <label for="rTelefono"><i class="fas fa-phone"></i> Teléfono *</label>
+                <input type="tel" id="rTelefono" placeholder="Ej: 300 123 4567" required>
+
+                <label for="rPersonas"><i class="fas fa-users"></i> Número de personas</label>
+                <input type="number" id="rPersonas" placeholder="Ej: 4" min="1" max="6">
+
+                <label for="rNotas"><i class="fas fa-comment"></i> Notas adicionales</label>
+                <textarea id="rNotas" placeholder="Solicitudes especiales..."></textarea>
+            </div>
+
+            <div class="modal-acciones">
+                <button class="btn-cancelar-modal" onclick="cerrarModalReserva()">Cancelar</button>
+                <button class="btn-confirmar-reserva" id="btnConfirmarReserva" onclick="confirmarReserva()" disabled>
+                    <i class="fas fa-arrow-right"></i> Continuar al pago
+                </button>
+            </div>
+        </div>
+
+        <!-- PASO PAGO -->
+        <div id="pagoStep">
+            <h3 style="color:#2e7d32;margin-bottom:14px;"><i class="fas fa-credit-card"></i> Simular pago</h3>
+            <div class="pago-resumen-box" id="pagoResumen"></div>
+            <p style="font-size:0.88rem;font-weight:700;color:#555;margin-bottom:10px;">Elige tu método de pago:</p>
+            <div class="metodos-pago">
+                <div class="metodo-card" onclick="seleccionarMetodo(this, 'Tarjeta de crédito/débito')">
+                    <input type="radio" name="metodoPago" value="Tarjeta de crédito/débito">
+                    <i class="fas fa-credit-card"></i>
+                    <label>Tarjeta Crédito/Débito</label>
+                </div>
+                <div class="metodo-card" onclick="seleccionarMetodo(this, 'Nequi')">
+                    <input type="radio" name="metodoPago" value="Nequi">
+                    <i class="fas fa-mobile-alt"></i>
+                    <label>Nequi</label>
+                </div>
+                <div class="metodo-card" onclick="seleccionarMetodo(this, 'Daviplata')">
+                    <input type="radio" name="metodoPago" value="Daviplata">
+                    <i class="fas fa-wallet"></i>
+                    <label>Daviplata</label>
+                </div>
+                <div class="metodo-card" onclick="seleccionarMetodo(this, 'PSE / Transferencia')">
+                    <input type="radio" name="metodoPago" value="PSE / Transferencia">
+                    <i class="fas fa-university"></i>
+                    <label>PSE / Banco</label>
+                </div>
+            </div>
+            <button class="btn-pagar" id="btnPagarAhora" onclick="procesarPago()">
+                <i class="fas fa-lock"></i> Pagar ahora (simulado)
+            </button>
+            <div class="pago-seguro-badge">
+                <i class="fas fa-shield-alt"></i> Pago 100% seguro · Demo de prueba
+            </div>
+            <button onclick="document.getElementById('formularioReserva').style.display='';document.getElementById('pagoStep').style.display='none';mostrarPasoReserva(1);"
+                style="background:none;border:none;color:#888;cursor:pointer;font-size:0.85rem;margin-top:12px;display:block;width:100%;text-align:center;">
+                ← Volver a editar reserva
+            </button>
+        </div>
+
+        <!-- ÉXITO -->
+        <div class="reserva-exito" id="reservaExito">
+            <i class="fas fa-check-circle"></i>
+            <h3>¡Reserva confirmada!</h3>
+            <p>Tu reserva para las fechas <strong id="exitoFechas"></strong> ha sido registrada.</p>
+            <p id="exitoMetodo" style="font-size:0.85rem;color:#888;"></p>
+            <p style="font-size:0.82rem;color:#888;margin-top:6px;">El administrador tiene tu reserva en el panel.</p>
+            <button class="btn-confirmar-reserva" onclick="cerrarModalReserva()" style="margin-top:14px;max-width:200px;margin-inline:auto;">
+                <i class="fas fa-check"></i> Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL USUARIO -->
+<div class="modal-usuario-overlay" id="modalUsuario">
+    <div class="modal-usuario-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:1.1rem;font-weight:700;color:#2e7d32;">🌿 Mi cuenta</span>
+            <button onclick="cerrarModalUsuario()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888;">✕</button>
+        </div>
+        <div class="tabs-usuario">
+            <button class="tab-u activo" id="tabLogin" onclick="cambiarTabUsuario('login')">Iniciar sesión</button>
+            <button class="tab-u" id="tabRegistro" onclick="cambiarTabUsuario('registro')">Registrarse</button>
+        </div>
+
+        <div id="panelLogin">
+            <div class="form-u">
+                <label>Correo electrónico</label>
+                <input type="email" id="uEmail" placeholder="tu@correo.com">
+                <label>Contraseña</label>
+                <input type="password" id="uPass" placeholder="••••••" onkeydown="if(event.key==='Enter')intentarLogin()">
+                <button class="btn-form-u" onclick="intentarLogin()"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
+            </div>
+        </div>
+
+        <div id="panelRegistro" style="display:none">
+            <div class="form-u">
+                <label>Nombre completo *</label>
+                <input type="text" id="uNombreReg" placeholder="Tu nombre">
+                <label>Correo electrónico *</label>
+                <input type="email" id="uEmailReg" placeholder="tu@correo.com">
+                <label>Teléfono</label>
+                <input type="tel" id="uTelReg" placeholder="300 123 4567">
+                <label>Contraseña *</label>
+                <input type="password" id="uPassReg" placeholder="Crea una contraseña" onkeydown="if(event.key==='Enter')intentarRegistro()">
+                <button class="btn-form-u" onclick="intentarRegistro()"><i class="fas fa-user-plus"></i> Crear cuenta</button>
+            </div>
+            <div class="desc-frecuente">
+                <b>🎁 Beneficios por ser cliente frecuente:</b><br>
+                ✅ 1–2 reservas: <b>5% de descuento</b><br>
+                🌟 3–4 reservas: <b>10% de descuento</b><br>
+                ⭐ 5+ reservas: <b>15% de descuento VIP</b>
+            </div>
+        </div>
+
+        <div class="msg-usuario" id="msgUsuario"></div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>🌿 Casas Campestres</h4>
+            <p>Tu mejor opción para escapar de la ciudad.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.instagram.com/casa_lospinos1/" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://wa.me/573003806930" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+        <div class="footer-section">
+            <h4>Enlaces</h4>
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.html#casas">Casas</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h4>Contacto</h4>
+            <p><i class="fas fa-phone"></i> <a href="tel:+573003806930" style="color:white;text-decoration:none">+57 300 380 6930</a></p>
+            <p><i class="fas fa-envelope"></i> info@casascampestres.co</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 Casas Campestres. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<script>
+function cambiarImagen(src) { document.getElementById('imagenPrincipal').src = src; }
+document.getElementById('menuToggle').addEventListener('click', function() {
+    document.getElementById('navMenu').classList.toggle('active');
+});
+function seleccionarMetodo(card, valor) {
+    document.querySelectorAll('.metodo-card').forEach(c => c.classList.remove('seleccionado'));
+    card.classList.add('seleccionado');
+    card.querySelector('input[type=radio]').checked = true;
+}
+
+// Mostrar aviso no-sesion para reseñas
+document.addEventListener('DOMContentLoaded', () => {
+    const usuario = getUsuarioActual ? getUsuarioActual() : null;
+    const noSesion = document.getElementById('noSesionResena');
+    if (noSesion) noSesion.style.display = usuario ? 'none' : 'block';
+});
+</script>
+<script src="reservas.js"></script>
+</body>
+</html>
